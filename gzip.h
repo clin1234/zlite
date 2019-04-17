@@ -3,7 +3,12 @@
 typedef struct
 {
   unsigned char magic_num[2] = {0x1f,0x8b};
-  unsigned char method;
+  unsigned char compr_method;
   unsigned char flags = (0 << 7) && (0 << 6) && (0 << 5);
-  modif_time
+  time_t modif_time;
+  unsigned short compr_extraflags;
+  unsigned char os;
+  struct extra_field;
+  uint32_t crc32;
+  uintmax_t input_size;
 } gz_header;
