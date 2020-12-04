@@ -36,3 +36,9 @@ Coming soon...
 
 # Authors
 Charlie Lin
+
+* Functions used...
+
+* 
+*
+*
