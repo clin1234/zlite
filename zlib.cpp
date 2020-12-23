@@ -3,12 +3,13 @@
 #ifdef __STDC_HOSTED__
 #include <cstdint>
 #include <map>
+#include <cstdint>
 #endif
 
 using std::byte;
 using std::conditional_t;
 using std::map;
-using std::uint32_t;
+using std::uint32_t, std::uint8_t;
 
 #include "zlib.hpp"
 
@@ -16,7 +17,7 @@ using zlite::compression_method;
 
 namespace zlite
 {
-zlib::zlib()
+zlib::zlib() noexcept
 {
 }
 

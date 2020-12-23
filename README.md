@@ -5,7 +5,7 @@ binary and source code size. It intends to conform to RFCs 1950-1952.
 # Build Instructions
 ## Unix-like OS
 Build prerequisites:
-* Compiler and library conformant to C99 standard
+* Compiler and library conformant to C++17 standard
 * make
 
 Steps:
@@ -31,14 +31,13 @@ Coming soon...
 
 ## Cross-compiling
 
-# Copyright
+## Copyright
 (C) 2019 under the MPL 2.0.
 
-# Authors
+## Authors
 Charlie Lin
 
-* Functions used...
-
-* 
-*
-*
+## TODO:
+- [] Convert build system to CMake?
+- [] Gzip compression/decompression
+- [] Implement zlib-compatible shim
