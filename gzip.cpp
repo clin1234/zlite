@@ -1,67 +1,40 @@
-#include <ctime>
-#include <fstream>
 #include <cstdlib>
+#include <ctime>
 #include <cwchar>
-#include <string>
+#include <fstream>
 #include <ios>
 #include <list>
+#include <string>
+#ifdef __STDC_HOSTED__
+#include <cstdint>
+
+using std::uint32_t, std::uint16_t;
+#else
+#endif
 #if __has_include(<format>)
 #include <format>
 #endif
 
-#include "gzip.hpp"
-#include "deflate.hpp"
 #include "crc32.hpp"
+#include "deflate.hpp"
+#include "gzip.hpp"
 
+using std::ifstream, std::ofstream, std::fstream;
 using std::size_t;
-using std::ifstream, std::ofstream;
+using std::ios_base::binary;
 
-namespace zlite
-{
-	gz_member::gz_member(const char* path, mode)
-	{
-		fstream& file(path, mode | binary);
-		if(file.failbit)
-		{
-			throw failure(string("Unable to open "+path));
-		}
-	}
-	gz_member::gzmember()
-	{
-		
-	}
-	
-
-	//gz_member::read()
-	//auto& operator >>
-	gz_file::read()
-	{
-		
-	}
-	gz_file::open(const char* path, mode)
-	{
-		
-	}
-	gz_file::write()
-	{
-		
-	}
+namespace zlite {
+gz_member::gz_member(const char *path, mode) {
+  fstream &file(path, mode | binary);
+  if (file.failbit) {
+    throw failure(string("Unable to open " + path));
+  }
 }
+gz_member::gzmember() {}
 
-extern "C"
-{
-	gzFile gzopen (const char *path, const char *mode);
-	bool gzbuffer (gzFile file, unsigned size);
-	int gzread (gzFile file, void* buf, unsigned len)
-	size_t gzfread (void* buf, size_t size, size_t nitems, gzFile file);
-	int gzwrite (gzFile file, void* buf, unsigned len);
-	size_t gzfwrite (void* buf, size_t size, size_t nitems, gzFile file);
-	short gzprintf (gzFile file, const char* format, ...);
-	int gzputs (gzFile file, const char* string);
-	int gzgets (gzFile file, const char* s);
-	int gzputc (gzFile file, unsigned char c);
-	int gzgetc (gzFile file)
-	int gzungetc (unsigned char c, gzFile file);
-	
-	int gzclose (gzFile file);	
-}
+// gz_member::read()
+// auto& operator >>
+void gz_file::read() {}
+void gz_file::open(const char *path, mode) {}
+void gz_file::write() {}
+} // namespace zlite

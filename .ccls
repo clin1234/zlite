@@ -1,0 +1,2 @@
+%compile_commands.json
+%cpp -std=c++20 -Wall -Wextra -pedantic -faligned-allocation -fchar8_t -trigraphs
