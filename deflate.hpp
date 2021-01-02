@@ -31,12 +31,13 @@ struct deflate {
 
   vector<byte> decompress();
   const char* info();
-  deflate(vector<byte>, compression_mode mode = compression_mode::None)
-      : number_of_blocks(0) {}
+  deflate(vector<byte>, compression_mode mode = compression_mode::None);
   deflate_block &operator[](const size_t index);
+  const deflate_block &operator[] (const size_t index) const;
   void swap(deflate &);
   void clear();
   void recompress(deflate_block &, compression_mode);
+  void push(vector<byte>, compression_mode);
 };
 } // namespace zlite
 

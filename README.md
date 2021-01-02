@@ -3,33 +3,19 @@ the implies, serves as a lightweight drop-in replacement, both in terms of
 binary and source code size. It intends to conform to RFCs 1950-1952.
 
 # Build Instructions
-## Unix-like OS
-Build prerequisites:
-* Compiler and library conformant to C++17 standard
-* make
+For the moment, only CMake is supported. At the moment, a C++17 compiler
+is required.
 
-Steps:
-1. Execute `configure.sh`.
-2. Type `make` to build zlite. See all options available by typing `make help`.
+## Instructions
+The following configs are supported:
+* Debug
+* MinSizeRel
+* RelWithDebInfo
 
-## Windows
-If you are building it on Cygwin or MSYS, see
-[link](# "instructions for Unix-like OSes").
-This assumes that you use the Visual Studio IDE or the Build Tools for Visual
-Studio.
-
-Build prerequisites:
-*
-* nmake
-
-Steps:
-1. Execute `configure.sh`.
-2. Type `make` to build zlite. See all options available by typing `make help`.
-
-## OpenVMS
-Coming soon...
-
-## Cross-compiling
+1. Run `cmake -DCMAKE_BUILD_TYPE=<config>` to generate native build files,
+or `cmake -G<generator> -DCMAKE_BUILD_TYPE=<config>` for a specific build system.
+2. Build using the generated build files, or run
+`cmake --build . -DCMAKE_BUILD_TYPE=<config>`.
 
 ## Copyright
 (C) 2019 under the MPL 2.0.
@@ -38,6 +24,11 @@ Coming soon...
 Charlie Lin
 
 ## TODO:
+### Primary:
 - [] Convert build system to CMake?
 - [] Gzip compression/decompression
 - [] Implement zlib-compatible shim
+
+### Secondary:
+- [] Test against other projects
+- [] Support older compilers?

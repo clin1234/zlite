@@ -12,13 +12,13 @@ using std::begin, std::end, std::move;
 
 using std::size_t, std::uint32_t, std::byte, std::to_integer;
 
-const uint16_t modulus = 65521;
+static const uint16_t modulus = 65521;
 
 namespace zlite {
 template <size_t len>
 uint32_t adler32(const
 #ifdef __STDC_HOSTED__
-                 array<byte, len> &data
+                 std::vector<byte> &data
 #else
                  byte (&data)[len]
 #endif
@@ -31,7 +31,7 @@ uint32_t adler32(const
     b = (b + a) % modulus;
   }
 
-  return (b << 16) + a;
+  return (b << 16) | a;
 }
 uint32_t combine_adler32(uint32_t adler1, uint32_t adler2,
                          unsigned long long len) {
@@ -53,9 +53,6 @@ uint32_t combine_adler32(uint32_t adler1, uint32_t adler2,
     sum2 -= modulus;
   return sum1 | (sum2 << 16);
 }
-
-} // namespace zlite
-
 extern "C" {
 /* TODO: is it static or reinterpret cast to convert between unsigned char
 and std::byte arrays? */
@@ -80,3 +77,4 @@ uint32_t adler32_combine(unsigned long adler1, unsigned long adler2,
   zlite::combine_adler32(adler1, adler2, len);
 }
 }
+} // namespace zlite
