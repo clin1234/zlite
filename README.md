@@ -25,10 +25,10 @@ Charlie Lin
 
 ## TODO:
 ### Primary:
-- [] Convert build system to CMake?
-- [] Gzip compression/decompression
-- [] Implement zlib-compatible shim
+- [ ] Convert build system to CMake?
+- [ ] Gzip compression/decompression
+- [ ] Implement zlib-compatible shim
 
 ### Secondary:
-- [] Test against other projects
-- [] Support older compilers?
+- [ ] Test against other projects
+- [ ] Support older compilers?

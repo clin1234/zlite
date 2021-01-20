@@ -19,7 +19,6 @@ using std::vector;
 using std::byte, std::to_integer;
 
 #include "deflate.hpp"
-
 namespace zlite {
 struct div_t {
   unsigned quot, rem;
@@ -54,10 +53,12 @@ std::vector<byte> deflate::decompress() {
            nlen = to_integer<unsigned short>((block.data.at(2) << 8) |
                                              block.data.at(3));
       if (~len != nlen) {
-        std::string message = "Wrong length in an uncompressed block."
-                              "\nExpected len:" +
-                              len + ", nlen:" + ~len + "\nGot len:" + len +
-                              ", nlen:" + len + '\n';
+        std::string message("Wrong length in an uncompressed block."
+                            "\nExpected len:" +
+                            std::to_string(len) +
+                            ", nlen:" + std::to_string(~len) +
+                            "\nGot len:" + std::to_string(len) +
+                            ", nlen:" + std::to_string(len) + '\n');
         throw runtime_error(message);
       }
       if (block.data.size() - 4 != len)
@@ -73,7 +74,7 @@ std::vector<byte> deflate::decompress() {
         unsigned short sym;
         if (sym == 256)
           break;
-          
+
         if (sym < 256) {
           lol.emplace_back(byte(sym));
         } else {

@@ -4,8 +4,10 @@
 // TODO: Handle using C-style arrays in freestanding environments...
 #ifdef __STDC_HOSTED__
 #include <array>
-#include <vector>
+#include <initializer_list>
 #include <utility>
+#include <vector>
+
 
 using std::array, std::vector, std::forward;
 #endif
@@ -74,19 +76,28 @@ uint32_t crc32(const
   return ~crc32;
 }
 
-uint32_t combine_crc32(uint32_t crc1, uint32_t crc2, unsigned long long len) {
-  return 0;
+template<long long len2>
+uint32_t combine_crc32(uint32_t crc1, uint32_t crc2) {
+  static_assert(len2 > 0);
 }
 } // namespace zlite
 
 extern "C" {
 uint32_t crc32(unsigned long crc, const unsigned char data[], unsigned len) {
-  vector<byte> stream(std::begin(byte(*data)), std::end(byte(*(data+len))));
-  stream.reserve(len);
-  zlite::crc32(vector<byte>({data}));
+  vector<byte>& stream(len, data);
+  zlite::crc32<len>(stream);
 }
+
 uint32_t crc32_z(unsigned long crc, const unsigned char data[], size_t len) {
-    constexpr size_t& size(len);
-  crc32(array<byte,size>(data));
+  const size_t &size(len);
+  crc32(array<byte, size>(data));
+}
+
+/* Assumes z_off_t is equivalent to off_t; for the sake of portability in C++,
+assume off_t is aliased to the largest fundamental signed integer type.
+*/
+uint32_t crc32_combine(unsigned long crc1, unsigned long crc2, long long len2) {
+  const auto s = len2;
+  zlite::combine_crc32<s>(crc1, crc2);
 }
 }
