@@ -14,8 +14,10 @@ using std::array, std::vector, std::forward;
 
 using std::uint32_t, std::byte, std::to_integer;
 
+#include "crc32.hpp"
+
 namespace zlite {
-const unsigned long crc32_table[256]{
+constexpr unsigned long crc32_table[256]{
     0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F,
     0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988,
     0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91, 0x1DB71064, 0x6AB020F2,
@@ -84,13 +86,15 @@ uint32_t combine_crc32(uint32_t crc1, uint32_t crc2) {
 
 extern "C" {
 uint32_t crc32(unsigned long crc, const unsigned char data[], unsigned len) {
-  vector<byte>& stream(len, data);
+  vector<byte> stream(len);
+  for(unsigned i = 0; i < len; i++){
+    stream.emplace_back(byte{data[i]});
+  }
   zlite::crc32<len>(stream);
 }
 
 uint32_t crc32_z(unsigned long crc, const unsigned char data[], size_t len) {
-  const size_t &size(len);
-  crc32(array<byte, size>(data));
+  crc32(crc, data, len);
 }
 
 /* Assumes z_off_t is equivalent to off_t; for the sake of portability in C++,

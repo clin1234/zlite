@@ -2,35 +2,36 @@
 #define __include_adler
 
 #include <cstddef>
-
-using std::byte;
+#include <cstdint>
+#include <initializer_list>
 
 #ifdef __STDC_HOSTED__
 #include <array>
-#include <cstdint>
 #include <vector>
+#include <cstdint>
+#ifdef __cpp_lib_span
+#include <span>
 
-using std::array;
-#else
+using std::span;
 #endif
+
+using std::array, std::vector;
+#endif
+
+using std::initializer_list;
+using std::size_t, std::uint32_t;
 
 namespace zlite {
-template <size_t len>
-uint32_t adler32(
-#ifdef __STDC_HOSTED__
-    std::vector<byte> &data
-#else
-    byte (&data)[len]
-#endif
-);
-}; // namespace zlite
+template <size_t len> extern uint32_t adler32(const unsigned char (&)[len]);
 
-extern "C" {
-uint32_t adler32(unsigned long adler, const unsigned char *data,
-                 unsigned int len);
-uint32_t adler32_z(unsigned long adler, const unsigned char data[], size_t len);
-uint32_t adler32_combine(unsigned long adler1, unsigned long adler2,
-                         unsigned long long len);
-}
+extern uint32_t adler32(const initializer_list<unsigned char> &);
+#ifdef __STDC_HOSTED__
+template <size_t len> extern uint32_t adler32(const array<unsigned char, len> &);
+extern uint32_t adler32(const vector<unsigned char> &);
+#ifdef __cpp_lib_span
+extern uint32_t adler32(const span<unsigned char> &);
+#endif
+#endif
+}; // namespace zlite
 
 #endif

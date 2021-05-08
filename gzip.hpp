@@ -14,6 +14,42 @@ using std::unordered_map;
 using std::vector;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+using gzFile = struct gzFile_s *;
+using z_off_t = long long;
+
+#ifndef __cplusplus
+using bool = _Bool;
+#endif
+
+gzFile gzopen(const char *path, const char *mode);
+int gzbuffer(gzFile file, unsigned size);
+int gzread(gzFile file, void *buf, unsigned len);
+size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file);
+int gzwrite(gzFile file, void *buf, unsigned len);
+size_t gzfwrite(void *buf, size_t size, size_t nitems, gzFile file);
+short gzprintf(gzFile file, const char *format, ...);
+int gzputs(gzFile file, const char *string);
+char *gzgets(gzFile file, char *buf, int len);
+int gzputc(gzFile file, int c);
+int gzgetc(gzFile file);
+int gzungetc(unsigned char c, gzFile file);
+int gzflush(gzFile file, int flush);
+z_off_t gzseek(gzFile file, z_off_t offset, int whence);
+int gzrewind(gzFile file);
+z_off_t gztell(gzFile file);
+z_off_t gzoffset(gzFile file);
+int gzeof(gzFile file);
+bool gzdirect(gzFile file);
+int gzclose(gzFile file);
+const char *gzerror(gzFile file, int *errnum);
+void gzclearerr(gzFile file);
+#ifdef __cplusplus
+}
+#endif
+
 namespace zlite {
 struct opt_extra_field {
   unsigned char subfield_id[2];
@@ -22,13 +58,13 @@ struct opt_extra_field {
 };
 
 class gz_file {
-  const std::byte magic[2]{byte(0x1f), byte(0x8b)};
-  std::byte method;
-  std::byte flags = byte((0 << 7) & (0 << 6) & (0 << 5));
+  const byte magic[2]{byte(0x1f), byte(0x8b)};
+  byte method;
+  byte flags = byte((0 << 7) & (0 << 6) & (0 << 5));
   // Guranteed epoch is Unix time since C++20 (00:00:00 Thursday 1 Jan 1970).
   // For C++17 and older, assume it is true.
   std::uint32_t modif_time;
-  unsigned char extra_flags;
+  byte extra_flags;
   unsigned char os;
   std::uint16_t opt_extra_field_len;
   struct opt_extra_field oxf;
@@ -40,9 +76,11 @@ class gz_file {
   std::uint32_t input_size;
 
 public:
-  gz_file(vector<byte>);
+  gz_file(vector<unsigned char>&);
   gz_file(const char *path, std::ios_base::openmode mode);
-  void open(const char *path, std::ios_base ::openmode mode);
+  explicit operator gzFile() const;
+  gz_file() = default;
+  void open(const char *path, std::ios_base::openmode mode);
   void read();
   void write();
 };
@@ -67,52 +105,20 @@ enum class OS : unsigned char {
   unknown = 255
 };
 
-unordered_map<OS, const char *> mapper{{OS::FAT_filesystem, "FAT filesystem"},
-                                       {OS::Amiga, "Amiga OS"},
-                                       {OS::VMS, "VMS or OpemVMS"},
-                                       {OS::Unix, "Unix or Unix-like OS"},
-                                       {OS::VM_CMS, "VM/CMS"},
-                                       {OS::Atari_TOS, "Atari TOS"},
-                                       {OS::HPFS, "HPFS"},
-                                       {OS::Z_System, "zSystem"},
-                                       {OS::CP_M, "CP/M"},
-                                       {OS::TOPS_20, "TOPS-20"},
-                                       {OS::NTFS, "NTFS"},
-                                       {OS::QDOS, "QDOS"},
-                                       {OS::RISC_OS, "RISC OS"},
-                                       {OS::unknown, "Unknown OS"}};
-
+const unordered_map<OS, const char *> mapper{
+    {OS::FAT_filesystem, "FAT filesystem"},
+    {OS::Amiga, "Amiga OS"},
+    {OS::VMS, "VMS or OpemVMS"},
+    {OS::Unix, "Unix or Unix-like OS"},
+    {OS::VM_CMS, "VM/CMS"},
+    {OS::Atari_TOS, "Atari TOS"},
+    {OS::HPFS, "HPFS"},
+    {OS::Z_System, "zSystem"},
+    {OS::CP_M, "CP/M"},
+    {OS::TOPS_20, "TOPS-20"},
+    {OS::NTFS, "NTFS"},
+    {OS::QDOS, "QDOS"},
+    {OS::RISC_OS, "RISC OS"},
+    {OS::unknown, "Unknown OS"}};
 } // namespace zlite
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-using gzFile = zlite::gz_file;
-using z_off_t = long long;
-
-gzFile gzopen(const char *path, const char *mode);
-int gzbuffer(gzFile file, unsigned size);
-int gzread(gzFile file, void *buf, unsigned len);
-size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file);
-int gzwrite(gzFile file, void *buf, unsigned len);
-size_t gzfwrite(void *buf, size_t size, size_t nitems, gzFile file);
-short gzprintf(gzFile file, const char *format, ...);
-int gzputs(gzFile file, const char *string);
-char *gzgets(gzFile file, char *buf, int len);
-int gzputc(gzFile file, int c);
-int gzgetc(gzFile file);
-int gzungetc(unsigned char c, gzFile file);
-int gzflush(gzFile file, int flush);
-z_off_t gzseek(gzFile file, z_off_t offset, int whence);
-int gzrewind(gzFile file);
-z_off_t gztell(gzFile file);
-z_off_t gzoffset(gzFile file);
-int gzeof(gzFile file);
-int gzdirect(gzFile file);
-int gzclose(gzFile file);
-const char *gzerror(gzFile file, int *errnum);
-void gzclearerr(gzFile file);
-#ifdef __cplusplus
-}
-#endif
 #endif

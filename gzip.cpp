@@ -9,13 +9,14 @@
 #include <iostream>
 #include <list>
 //#include <string>
-#include <vector>
 #include <thread>
+#include <vector>
 
 using std::cerr;
 using std::ifstream, std::ofstream, std::fstream;
 using std::size_t;
 // using std::string;
+using std::thread;
 using std::vector;
 #else
 #endif
@@ -28,6 +29,7 @@ using std::uint32_t, std::uint16_t;
 #include "crc32.hpp"
 #include "deflate.hpp"
 #include "gzip.hpp"
+#include "zlib.hpp"
 
 namespace zlite {
 
@@ -51,7 +53,7 @@ void gz_file::open(const char *path, std::ios_base ::openmode mode) {
   type, and the first parameter of read() expects a char pointer, the
   reinterpret_cast is necessary.
   */
-  file.read(reinterpret_cast<char*>(buf.data()), buf.size());
+  file.read(reinterpret_cast<char *>(buf.data()), buf.size());
   if (buf[0] != 0x1f || buf[1] != 0x88)
     std::cerr << "Invalid gzip magic number: got " << buf[0] << "and "
               << buf[1];
@@ -112,27 +114,45 @@ void gz_file::open(const char *path, std::ios_base ::openmode mode) {
   // FHCRC
   if (to_integer<bool>(flags & byte{0x1f}) >> 1) {
   }
-  std::thread s;
+  thread s;
 
   s.join();
   file.close();
 }
 void gz_file::write() {}
+gz_file::operator gzFile() const {
+    return gz_file();
+}
 } // namespace zlite
 
 extern "C" {
-gzFile gzopen(const char *path, const char *mode) {}
-int gzbuffer(gzFile file, unsigned size) {}
-int gzread(gzFile file, void *buf, unsigned len) {}
-size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file) {}
+gzFile gzopen(const char *path, const char *mode) { return nullptr; }
+int gzbuffer(gzFile file, unsigned size) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+int gzread(gzFile file, void *buf, unsigned len) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
 int gzwrite(gzFile file, void *buf, unsigned len) {
   auto bytes_written{0};
 
   return bytes_written;
 }
 size_t gzfwrite(void *buf, size_t size, size_t nitems, gzFile file) {}
-short gzprintf(gzFile file, const char *format, ...) {}
-int gzputs(gzFile file, const char *string) {}
+short gzprintf(gzFile file, const char *format, ...) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+int gzputs(gzFile file, const char *string) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
 char *gzgets(gzFile file, char *buf, int len) {
 
   return buf;
@@ -140,20 +160,52 @@ char *gzgets(gzFile file, char *buf, int len) {
     return nullptr;
 }
 int gzputc(gzFile file, int c) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
   return static_cast<unsigned char>(c);
   if (auto x{0}; x)
     return -1;
 }
-int gzgetc(gzFile file) {}
-int gzungetc(unsigned char c, gzFile file) {}
-int gzflush(gzFile file, int flush) {}
-z_off_t gzseek(gzFile file, z_off_t offset, int whence) {}
-int gzrewind(gzFile file) {}
-z_off_t gztell(gzFile file) {}
-z_off_t gzoffset(gzFile file) {}
-int gzeof(gzFile file) {}
-int gzdirect(gzFile file) {}
-int gzclose(gzFile file) {}
+int gzgetc(gzFile file) {
+  if (file == nullptr)
+    return -1;
+}
+int gzungetc(unsigned char c, gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+int gzflush(gzFile file, int flush) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+z_off_t gzseek(gzFile file, z_off_t offset, int whence) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+int gzrewind(gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+z_off_t gztell(gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+z_off_t gzoffset(gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+int gzeof(gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
+bool gzdirect(gzFile file) {
+  if (file == nullptr)
+    return 0;
+}
+int gzclose(gzFile file) {
+  if (file == nullptr)
+    return Z_STREAM_ERROR;
+}
 const char *gzerror(gzFile file, int *errnum) {}
 void gzclearerr(gzFile file) {}
 }

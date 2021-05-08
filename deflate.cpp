@@ -82,6 +82,7 @@ std::vector<byte> deflate::decompress() {
       }
     } break;
     case compression_mode::With_fixed_Huffman:
+    unsigned short len_codes {257};
       break;
     default:
       throw std::runtime_error("Invalid Deflate compression mode");

@@ -12,8 +12,6 @@ using std::unordered_map, std::vector;
 #else
 #endif
 
-using std::byte;
-
 namespace zlite {
 
 unordered_map<unsigned short, const char *> method{{8, "Deflate"},
@@ -29,27 +27,46 @@ struct zlib {
   [[no_unique_address]] conditional_t<flags &(1 << 5), uint32_t,
                                       decltype([] {})>
       dict_adler_32;
-  vector<byte> compressed_data;
+  vector<unsigned char> compressed_data;
   uint32_t adler_32;
 
   // public:
   unordered_map<const char *, uint32_t> compression_info();
   zlib() : compression_field(0), flags(0), compressed_data{}, adler_32(0) {}
-  virtual zlib &compress(vector<byte> &data, unsigned char method = 8,
-                         bool use_dictionary = false) = 0;
-  virtual vector<byte> &decompress() = 0;
+  virtual zlib &compress(vector<unsigned char> &data,
+            unsigned char method = 8, bool use_dictionary = false) = 0;
+  virtual vector<unsigned char> &decompress() = 0;
 };
 
 }; // namespace zlite
 
 extern "C" {
-#define Z_NO_FLUSH 0
-#define Z_PARTIAL_FLUSH 1
-#define Z_SYNC_FLUSH 2
-#define Z_FULL_FLUSH 3
-#define Z_FINISH 4
-#define Z_BLOCK 5
-#define Z_TREES 6
+enum {
+  Z_NO_FLUSH,
+  Z_PARTIAL_FLUSH,
+  Z_SYNC_FLUSH,
+  Z_FULL_FLUSH,
+  Z_FINISH,
+  Z_BLOCK,
+  Z_TREES,
+};
+enum {
+  Z_OK = 0,
+  Z_STREAM_END = 1,
+  Z_NEED_DICT = 2,
+  Z_ERRNO = -1,
+  Z_STREAM_ERROR = -2,
+  Z_DATA_ERROR = -3,
+  Z_MEM_ERROR = -4,
+  Z_BUF_ERROR = -5,
+  Z_VERSION_ERROR = -6
+};
+enum {
+  Z_NO_COMPRESSION = 0,
+  Z_BEST_SPEED = 1,
+  Z_BEST_COMPRESSION = 9,
+  Z_DEFAULT_COMPRESSION = -1,
+};
 struct z_stream {
   const unsigned char *next_in; /* next input byte */
   unsigned avail_in;            /* number of bytes available at next_in */
@@ -68,11 +85,16 @@ struct z_stream {
   uint32_t adler; /* Adler-32 or CRC-32 value of the uncompressed data */
   unsigned long reserved; /* reserved for future use */
 };
-int deflateInit(z_stream *strm, int level);
-int deflate(z_stream *strm, int flush);
-int deflateEnd(z_stream *strm);
-int inflateInit(z_stream *strm);
-int inflate(z_stream *strm, int flush);
-int inflateEnd(z_stream *strm);
+int deflateInit(z_stream *, int);
+int deflateInit2(z_stream *, int, int, int, int);
+int deflate(z_stream *, int 
+#ifdef __cplusplus
+= Z_NO_FLUSH
+#endif
+);
+int deflateEnd(z_stream *);
+int inflateInit(z_stream *);
+int inflate(z_stream *, int);
+int inflateEnd(z_stream *);
 }
 #endif

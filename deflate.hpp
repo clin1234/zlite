@@ -19,13 +19,13 @@ enum class compression_mode : unsigned char {
   // Reserved
 };
 
-// TODO: encapsulate
-struct deflate {
-  struct deflate_block {
+struct deflate_block {
     bool is_final_block;
     compression_mode mode : 2;
     vector<byte> data;
   };
+// TODO: encapsulate
+struct deflate {
   vector<deflate_block> blocks;
   size_t number_of_blocks;
 

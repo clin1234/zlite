@@ -1,9 +1,6 @@
 #include <limits.h>
 
-#if CHAR_BIT != 8
- #error Your system does not define one byte as 8 bits. How in the world is it\
- possible in this day and age...
-#endif
+static_assert(CHAR_BIT == 8, "How is it possible in this day and age?");
 
 /* Unconditional use of fixed integer types requires workarounds for C libraries
 that do not define *int?_t types in <stdint.h>. */
