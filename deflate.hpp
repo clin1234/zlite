@@ -16,7 +16,7 @@ enum class compression_mode : unsigned char {
   None,
   With_fixed_Huffman,
   With_dynamic_Huffman,
-  // Reserved
+  Reserved
 };
 
 struct deflate_block {

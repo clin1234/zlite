@@ -1,3 +1,4 @@
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #ifdef __STDC_HOSTED__
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <list>
 //#include <string>
+#include <cstring>
 #include <thread>
 #include <vector>
 
@@ -120,9 +122,7 @@ void gz_file::open(const char *path, std::ios_base ::openmode mode) {
   file.close();
 }
 void gz_file::write() {}
-gz_file::operator gzFile() const {
-    return gz_file();
-}
+gz_file::operator gzFile() const { return gz_file(); }
 } // namespace zlite
 
 extern "C" {
@@ -136,8 +136,9 @@ int gzread(gzFile file, void *buf, unsigned len) {
     return Z_STREAM_ERROR;
 }
 size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
-  if (file == nullptr)
-    return Z_STREAM_ERROR;
+  if (file == nullptr || size == 0 || nitems == 0 ||
+      (nitems * size) / size != nitems || buf == nullptr)
+    return gzwrite(file, buf, nitems*size) / size;
 }
 int gzwrite(gzFile file, void *buf, unsigned len) {
   auto bytes_written{0};
@@ -150,8 +151,12 @@ short gzprintf(gzFile file, const char *format, ...) {
     return Z_STREAM_ERROR;
 }
 int gzputs(gzFile file, const char *string) {
-  if (file == nullptr)
-    return Z_STREAM_ERROR;
+
+  auto len{strlen(string)};
+  if (file == nullptr || len > INT_MAX)
+    return -1;
+  gzwrite(file, &string, len);
+  return len;
 }
 char *gzgets(gzFile file, char *buf, int len) {
 
@@ -169,6 +174,8 @@ int gzputc(gzFile file, int c) {
 int gzgetc(gzFile file) {
   if (file == nullptr)
     return -1;
+  unsigned char b[1];
+  return gzread(file, b, 1);
 }
 int gzungetc(unsigned char c, gzFile file) {
   if (file == nullptr)

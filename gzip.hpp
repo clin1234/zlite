@@ -14,42 +14,6 @@ using std::unordered_map;
 using std::vector;
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-using gzFile = struct gzFile_s *;
-using z_off_t = long long;
-
-#ifndef __cplusplus
-using bool = _Bool;
-#endif
-
-gzFile gzopen(const char *path, const char *mode);
-int gzbuffer(gzFile file, unsigned size);
-int gzread(gzFile file, void *buf, unsigned len);
-size_t gzfread(void *buf, size_t size, size_t nitems, gzFile file);
-int gzwrite(gzFile file, void *buf, unsigned len);
-size_t gzfwrite(void *buf, size_t size, size_t nitems, gzFile file);
-short gzprintf(gzFile file, const char *format, ...);
-int gzputs(gzFile file, const char *string);
-char *gzgets(gzFile file, char *buf, int len);
-int gzputc(gzFile file, int c);
-int gzgetc(gzFile file);
-int gzungetc(unsigned char c, gzFile file);
-int gzflush(gzFile file, int flush);
-z_off_t gzseek(gzFile file, z_off_t offset, int whence);
-int gzrewind(gzFile file);
-z_off_t gztell(gzFile file);
-z_off_t gzoffset(gzFile file);
-int gzeof(gzFile file);
-bool gzdirect(gzFile file);
-int gzclose(gzFile file);
-const char *gzerror(gzFile file, int *errnum);
-void gzclearerr(gzFile file);
-#ifdef __cplusplus
-}
-#endif
-
 namespace zlite {
 struct opt_extra_field {
   unsigned char subfield_id[2];

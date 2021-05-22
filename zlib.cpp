@@ -1,8 +1,11 @@
 #include <cstddef>
+#include <cstdlib>
 #include <type_traits>
 #ifdef __STDC_HOSTED__
 #include <cstdint>
+#include <iostream>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <vector>
 #endif
@@ -28,14 +31,17 @@ struct Deflate_Compression : zlib {
   zlib &compress(vector<byte> &data, unsigned char method = 8,
                  bool use_dictionary = false) override {
     if (use_dictionary)
-      flags |= 0b00'1'00000;
+      flaggers |= 0b00'1'0000;
     if (method >= 0 || method < 15) {
       switch (method) {
 
       case 8:;
         deflate stream(data, compression_mode::With_dynamic_Huffman);
         break;
+      case 15:
+        break;
       default:
+        throw std::domain_error("Unimplemented method");
         break;
       }
     } else
@@ -43,23 +49,50 @@ struct Deflate_Compression : zlib {
   }
 
   vector<byte> &decompress() override {
+    if ((l * 256 + flaggers) % 31 != 0) {
+      std::cerr << "Check bits failed: got " << (flaggers & 0b1111) << '\n';
+      std::exit(EXIT_FAILURE);
+    }
+    bool preset{false};
+    vector<unsigned char> dictionary;
+
+    if ((flaggers >> 5) & 1) {
+      preset = true;
+      dictionary = p;
+    }
+    deflate comp{};
     if (adler_32 != adler32(compressed_data)) {
-      throw std::runtime_error("Possible corruption on zlib stream\n\
-                               Expected: " +
-                               adler_32 + ", Got: " + adler32(compressed_data));
+      std::cerr << "Possible corruption on zlib stream\nExpected: " << adler_32
+                << ", Got: " << adler32(compressed_data) << '\n';
+      std::exit(EXIT_FAILURE);
+    }
+
+    unsigned short lz77_window_size, decomp_lvl;
+    switch (auto method{l & 0b1111}; method) {
+    case 8:
+      if (auto window{(l >> 4) & 0b1111}; window > 7) {
+        std::cerr << "For Deflate method, got " << window
+                  << "; highest allowed is 7\n";
+        std::exit(EXIT_FAILURE);
+      } else {
+        lz77_window_size = 2 << (window + 8);
+        decomp_lvl = (flaggers >> 6) & 0b11;
+      }
+    case 15:
+      std::cerr << "Reserved method.\n";
+      std::exit(EXIT_FAILURE);
     }
   }
 };
 
-unordered_map<const char *, uint32_t> zlib::compression_info() {
-  return unordered_map<const char *, uint32_t>{
-      {"Compression method",
-       static_cast<uint32_t>(method[compression_field & 0b1111])},
-      {"Compression info", compression_field & 0xf0},
-      {"Dictionary is preset", flags >> 5},
-      {"Compression level", flags >> 6},
-      {"Adler-32 of compressed data", adler_32}};
-}
+auto zlib::compression_info() {
+  using std::to_string, std::string;
+  return unordered_map<const char *, const char *>{
+      {"Compression method", method[l >> 4]},
+      {"Compression info", to_string(l & 0xf0).c_str()},
+      {"Dictionary is preset", flaggers >> 5 ? "yes" : "no"},
+      {"Compression level", to_string(flaggers >> 6).c_str()},
+      {"Adler-32 of compressed data", to_string(adler_32).c_str()}};
 }; // namespace zlite
 
 extern "C" {
@@ -76,46 +109,34 @@ int deflate(z_stream *s, int flush) {
   s->next_out = nullptr;
   s->adler;
   switch (flush) {
-    case Z_FULL_FLUSH:;
-    case Z_NO_FLUSH:;
-    case Z_PARTIAL_FLUSH:;
-    case Z_SYNC_FLUSH:;
-    case Z_FINISH:;
-    case Z_BLOCK:;
-    case Z_TREES:;
+  case Z_FULL_FLUSH:;
+  case Z_NO_FLUSH:;
+  case Z_PARTIAL_FLUSH:;
+  case Z_SYNC_FLUSH:;
+  case Z_FINISH:;
+  case Z_BLOCK:;
+  case Z_TREES:;
   }
 }
 
-int deflateEnd(z_stream* s)
-{
-    return Z_OK;
-}
+int deflateEnd(z_stream *s) { return Z_OK; }
 
-int inflateInit(z_stream* s)
-{
-    
-}
+int inflateInit(z_stream *s) {}
 int inflate(z_stream *s, int flush) {
   s->next_out = nullptr;
   s->adler;
   switch (flush) {
-    case Z_FULL_FLUSH:;
-    case Z_NO_FLUSH:;
-    case Z_PARTIAL_FLUSH:;
-    case Z_SYNC_FLUSH:;
-    case Z_FINISH:;
-    case Z_BLOCK:;
-    case Z_TREES:;
+  case Z_FULL_FLUSH:;
+  case Z_NO_FLUSH:;
+  case Z_PARTIAL_FLUSH:;
+  case Z_SYNC_FLUSH:;
+  case Z_FINISH:;
+  case Z_BLOCK:;
+  case Z_TREES:;
   }
 }
-int inflateEnd(z_stream* s)
-{
-    return Z_OK;
-}
+int inflateEnd(z_stream *s) { return Z_OK; }
 
-int compress (unsigned char* d, unsigned long* dl, const unsigned char* s,
-              unsigned long* sl)
-{
-    
-}
+int compress(unsigned char *d, unsigned long *dl, const unsigned char *s,
+             unsigned long *sl) {}
 }

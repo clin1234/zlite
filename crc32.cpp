@@ -85,7 +85,8 @@ uint32_t combine_crc32(uint32_t crc1, uint32_t crc2) {
 } // namespace zlite
 
 extern "C" {
-uint32_t crc32(unsigned long crc, const unsigned char data[], unsigned len) {
+#include "crc32.h"
+unsigned long crc32(unsigned long crc, const unsigned char data[], unsigned len) {
   vector<byte> stream(len);
   for(unsigned i = 0; i < len; i++){
     stream.emplace_back(byte{data[i]});
@@ -93,14 +94,14 @@ uint32_t crc32(unsigned long crc, const unsigned char data[], unsigned len) {
   zlite::crc32<len>(stream);
 }
 
-uint32_t crc32_z(unsigned long crc, const unsigned char data[], size_t len) {
+unsigned long crc32_z(unsigned long crc, const unsigned char data[], size_t len) {
   crc32(crc, data, len);
 }
 
 /* Assumes z_off_t is equivalent to off_t; for the sake of portability in C++,
 assume off_t is aliased to the largest fundamental signed integer type.
 */
-uint32_t crc32_combine(unsigned long crc1, unsigned long crc2, long long len2) {
+unsigned long crc32_combine(unsigned long crc1, unsigned long crc2, off_t len2) {
   const auto s = len2;
   zlite::combine_crc32<s>(crc1, crc2);
 }

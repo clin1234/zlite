@@ -1,23 +1,13 @@
 #include <limits.h>
+#if defined(__VMS) || defined (VMS) || defined (__VMS__)
+#include <unixio.h>
+#else
+#include <sys/types.h> // Windows has off_t
+#endif
 
 static_assert(CHAR_BIT == 8, "How is it possible in this day and age?");
 
 /* Unconditional use of fixed integer types requires workarounds for C libraries
 that do not define *int?_t types in <stdint.h>. */
-switch(unsigned char x = 2)
-{
-  case sizeof(x)==sizeof(unsigned short):
-    typedef uint16_t unsigned short; break;
-  case sizeof(x)==sizeof(unsigned int):
-    typedef uint16_t unsigned int; break;
-}
 
-switch(unsigned char x = 4)
-{
-  case sizeof(x)==sizeof(unsigned short):
-    typedef uint32_t unsigned short; break;
-  case sizeof(x)==sizeof(unsigned int):
-    typedef uint32_t unsigned int; break;
-  case sizeof(x)==sizeof(unsigned long):
-    typedef uint32_t unsigned long; break;
-}
+typedef off_t off_t;

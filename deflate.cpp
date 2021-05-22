@@ -1,22 +1,24 @@
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #ifdef __STDC_HOSTED__
 #include <algorithm>
 #include <bitset>
-#include <cstdint>
 #include <iterator>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include <vector>
 
 using std::for_each_n, std::advance;
 using std::runtime_error;
 using std::uint16_t;
+using std::variant;
 using std::vector;
-#else
 #endif
 
 using std::byte, std::to_integer;
+using std::size_t;
 
 #include "deflate.hpp"
 namespace zlite {
@@ -40,6 +42,23 @@ struct range {
   unsigned short end, bit_length;
 };
 static range range[4]{{143, 8}, {255, 9}, {279, 7}, {287, 8}};
+
+struct Huffman_Node {
+  Huffman_Node() : symbol{0}, parent{0} {}
+  Huffman_Node(const Huffman_Node &rhs)
+      : symbol{rhs.symbol}, parent{rhs.parent} {}
+  Huffman_Node &operator=(const Huffman_Node &rhs) {
+    symbol = rhs.symbol;
+    parent = rhs.parent;
+    return *this;
+  }
+  size_t symbol;
+  union {
+    size_t parent;
+    unsigned depth, freq;
+  };
+};
+
 std::vector<byte> deflate::decompress() {
   using zlite::compression_mode;
   std::vector<byte> lol;
@@ -82,7 +101,7 @@ std::vector<byte> deflate::decompress() {
       }
     } break;
     case compression_mode::With_fixed_Huffman:
-    unsigned short len_codes {257};
+      unsigned short len_codes{257};
       break;
     default:
       throw std::runtime_error("Invalid Deflate compression mode");
@@ -115,9 +134,9 @@ deflate::deflate(vector<byte> uncompressed_data, compression_mode mode) {
     block.data = {byte(lol.rem >> 8), byte(lol.rem | 0xff), byte(nlen >> 8),
                   byte(nlen | 0xff)};
 
-    for (auto it = uncompressed_data.rbegin(); it != (it + lol.rem); ++it) {
-      block.data.emplace_back(uncompressed_data.at(*it));
-    }
+    for (auto &&rbeg{uncompressed_data.rbegin()}, it{rbeg};
+         it != (rbeg + lol.rem); ++it)
+      block.data.emplace_back(*it);
     blocks.emplace_back(block);
   } break;
   case compression_mode::With_dynamic_Huffman: {
@@ -130,7 +149,7 @@ deflate::deflate(vector<byte> uncompressed_data, compression_mode mode) {
     throw std::invalid_argument("Invalid compression mode");
   }
 }
-deflate::deflate_block &deflate::operator[](const size_t index) {
+deflate_block &deflate::operator[](const size_t index) {
   try {
     return blocks.at(index);
   } catch (std::out_of_range &e) {
@@ -138,7 +157,7 @@ deflate::deflate_block &deflate::operator[](const size_t index) {
   }
 }
 
-const deflate::deflate_block &deflate::operator[](const size_t index) const {
+const deflate_block &deflate::operator[](const size_t index) const {
   try {
     return blocks.at(index);
   } catch (std::out_of_range &e) {
@@ -167,9 +186,9 @@ void deflate::push(vector<byte> uncompressed_data, compression_mode mode) {
     block.data = {byte(lol.rem >> 8), byte(lol.rem | 0xff), byte(nlen >> 8),
                   byte(nlen | 0xff)};
 
-    for (auto it = uncompressed_data.rbegin(); it != (it + lol.rem); ++it) {
-      block.data.emplace_back(uncompressed_data.at(*it));
-    }
+    for (auto &&rbeg{uncompressed_data.rbegin()}, it{rbeg};
+         it != (rbeg + lol.rem); ++it)
+      block.data.emplace_back(*it);
 
   } break;
   case compression_mode::With_dynamic_Huffman:
@@ -179,11 +198,9 @@ void deflate::push(vector<byte> uncompressed_data, compression_mode mode) {
   default:
     break;
   }
-  blocks.emplace_back(block);
   block.is_final_block = true;
+  blocks.emplace_back(block);
 }
 
 const char *deflate::info() {}
 } // namespace zlite
-
-extern "C" {}

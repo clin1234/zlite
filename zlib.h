@@ -16,6 +16,8 @@ extern "C" {
 #endif
 
 #include "adler32.h"
+#include "crc32.h"
+#include "gzip.h"
 
 #ifdef __cplusplus
 }
